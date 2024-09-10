@@ -44,12 +44,12 @@ class SoundModel(nn.Module):
         return x
             
         
-if __name__ == "__main__":
-    import dataset as ds
-    test_dataset, classes = ds.get_dataloader('Signals/test', batch_size=32, shuffle=False,num_workers=4, pin_memory=True, transform=None)
-    input_batch, target_batch = next(iter(test_dataset))
+# if __name__ == "__main__":
+#     import dataset as ds
+#     test_dataset, classes = ds.get_dataloader('Signals/test', batch_size=32, shuffle=False,num_workers=4, pin_memory=True, transform=None)
+#     input_batch, target_batch = next(iter(test_dataset))
     
-    model = SoundModel(input_shape=1, num_classes=len(classes), hidden_size=16)
-    preds = model(input_batch.unsqueeze(1))
-    print(preds.shape)
-    print(preds)
+#     model = SoundModel(input_shape=1, num_classes=len(classes), hidden_size=16)
+#     preds = model(input_batch.unsqueeze(1))
+#     print(preds.shape)
+#     print(preds)

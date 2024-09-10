@@ -4,8 +4,9 @@ from model import SoundModel
 import torch.nn as nn
 import torch.optim as optim
 from tqdm.auto import tqdm
-from utils import save_checkpoint
+from utils import save_checkpoint, load_checkpoint
 from sklearn.metrics import f1_score
+import argparse
 
 def train(train_loader, model, criterion, optimizer, device):
     
@@ -54,7 +55,7 @@ def evaluate(test_loader, model, criterion, device):
         total_f1 /= len(test_loader)
     return total_loss, total_accuracy, total_f1
 
-def train_step(train_loader, val_loader, model, criterion, optimizer, device, num_epochs):
+def train_step(train_loader, val_loader, model, criterion, optimizer, device, num_epochs, prev_epoch=0):
         
         train_losses = []
         train_accuracies = []
@@ -64,7 +65,7 @@ def train_step(train_loader, val_loader, model, criterion, optimizer, device, nu
         val_f1s = []
         best_f1 = 0
         
-        for epoch in tqdm(range(num_epochs)):
+        for epoch in tqdm(range(prev_epoch, num_epochs+prev_epoch)):
             
             train_loss, train_accuracy, train_f1 = train(train_loader, model, criterion, optimizer, device)
             val_loss, val_accuracy, val_f1 = evaluate(val_loader, model, criterion, device)
@@ -86,17 +87,49 @@ def train_step(train_loader, val_loader, model, criterion, optimizer, device, nu
             
         return train_losses, train_accuracies, val_losses, val_accuracies
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Train a model')
+    parser.add_argument('--train_data_dir', type=str, required=True, help='Path to the data directory')
+    parser.add_argument('--val_data_dir', type=str, required=True, help='Path to the data directory')
+    parser.add_argument('--device', type=str, default='cpu', help='Device to use for training')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size for training')
+    parser.add_argument('--num_workers', type=int, default=4, help='Number of workers for the dataloader')
+    parser.add_argument('--pin_memory', type=bool, default=True, help='Whether to use pin memory for the dataloader')
+    parser.add_argument('--num_epochs', type=int, default=10, help='Number of epochs to train the model')
+    parser.add_argument('--lr', type=float, default=0.001, help='Learning rate for the optimizer')
+    parser.add_argument('--hidden_size', type=int, default=16, help='Hidden size for the model')
+    parser.add_argument('--checkpoint', type=str, default=None, help='Path to the model checkpoint')
+    
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    args = parse_args()
+    device = torch.device('cpu')
+    if args.device == 'cuda' and torch.cuda.is_available():
+        device = torch.device('cuda')
+        
+    train_data = ds.get_dataset(args.train_data_dir, transform=None)
+    classes = train_data.classes
+    val_data = ds.get_dataset(args.val_data_dir, transform=None)
     
-    train_loader, classes = ds.get_dataloader('Signals/train', batch_size=128, shuffle=True, num_workers=4, pin_memory=True, transform=None)
-    val_loader, _ = ds.get_dataloader('Signals/val', batch_size=128, shuffle=False, num_workers=4, pin_memory=True, transform=None)
     
-    model = SoundModel(input_shape=1, num_classes=len(classes), hidden_size=16).to(device)
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=args.pin_memory) # type: ignore
+    val_loader = torch.utils.data.DataLoader(val_data, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=args.pin_memory) # type: ignore
+    
+    prev_epoch = 0
+    if args.checkpoint is None:
+        model = SoundModel(input_shape=1, num_classes=len(classes), hidden_size=args.hidden_size).to(device)
+        optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    else:
+        model, optimizer, prev_epoch, loss, model_f1_score = load_checkpoint(args.checkpoint)
+        print(f"Model loaded from epoch {prev_epoch}, with loss: {loss:.4f}, and F1 Score: {model_f1_score:.4f}")
+        model = model.to(device)
+    
+    
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    
-    train_losses, train_accuracies, val_losses, val_accuracies = train_step(train_loader, val_loader, model, criterion, optimizer, device, num_epochs=1)
+    train_losses, train_accuracies, val_losses, val_accuracies = train_step(train_loader, val_loader, model, criterion, optimizer, device, num_epochs=args.num_epochs, prev_epoch=prev_epoch)
     
     print("Training Losses: ", train_losses)
     print("Training Accuracies: ", train_accuracies)
