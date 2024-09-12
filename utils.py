@@ -4,6 +4,8 @@ import os
 import librosa
 from tqdm.auto import tqdm
 import torch
+import mlflow
+
 
     
 def create_class_folders(base_dir, classes):
@@ -44,8 +46,13 @@ def save_checkpoint(model, optimizer, epoch, loss, f1_score, path, is_best=False
         'f1_score': f1_score
     }
     torch.save(checkpoint, os.path.join(path, 'checkpoint.pth.tar'))
+    mlflow.log_artifact(os.path.join(path, 'checkpoint.pth.tar'))
+    
     if is_best:
         torch.save(checkpoint, os.path.join(path, 'best.pth.tar'))
+        mlflow.log_artifact(os.path.join(path, 'best.pth.tar'))
+    # mlflow.pytorch.log_model(model, 'model')
+    
     
     print('\nCheckpoint saved to', path)
     
@@ -59,12 +66,9 @@ def load_checkpoint(path):
     
     return model, optimizer, epoch, loss, f1_score
 
-# def load_checkpoint(model, optimizer, path):
-#     checkpoint = torch.load(path)
-#     model.load_state_dict(checkpoint['model_state_dict'])
-#     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    
-#     return model, optimizer, checkpoint['epoch'], checkpoint['loss'], checkpoint['f1_score']
-
-
+def create_signature_log_model(model, device):
+    input_sample = torch.randn(1, 1, 50).to(device)
+    signature = mlflow.models.infer_signature(input_sample.detach().numpy(), model(input_sample).detach().numpy())
+    mlflow.pytorch.log_model(model, 'model', signature=signature)
+    print('Model logged to mlflow')
     

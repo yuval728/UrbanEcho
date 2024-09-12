@@ -31,6 +31,8 @@ class SoundModel(nn.Module):
         self.fc1 = nn.Linear(in_features=384, out_features=128)
         self.fc2 = nn.Linear(in_features=128, out_features=num_classes)
         
+        self.init_weights()
+        
     def forward(self, x):
         x = self.convBlock1(x)
         x = self.convBlock2(x)
@@ -43,6 +45,19 @@ class SoundModel(nn.Module):
         
         return x
             
+    def init_weights(self):
+        print("Initializing weights for the model with Kaiming Normal")
+        for m in self.modules():
+            if isinstance(m, nn.Conv1d):
+                nn.init.kaiming_normal_(m.weight)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm1d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+        
         
 # if __name__ == "__main__":
 #     import dataset as ds
