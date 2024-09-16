@@ -4,7 +4,7 @@ from model import SoundModel
 import torch.nn as nn
 import torch.optim as optim
 from tqdm.auto import tqdm
-from utils import save_checkpoint, load_checkpoint, create_signature_log_model
+from utils import save_checkpoint, load_checkpoint
 from sklearn.metrics import f1_score
 import argparse
 import mlflow
@@ -109,7 +109,7 @@ def train_step(
             f"Epoch: {epoch+1}/{num_epochs+prev_epoch}, Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f}, Train F1: {train_f1:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}, Val F1: {val_f1:.4f}"
         )
 
-    create_signature_log_model(model, device)
+    # create_signature_log_model(model, device)
 
     return train_loss, train_accuracy, train_f1, val_loss, val_accuracy, val_f1
 

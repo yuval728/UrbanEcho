@@ -66,9 +66,15 @@ def load_checkpoint(path):
     
     return model, optimizer, epoch, loss, f1_score
 
-def create_signature_log_model(model, device):
-    input_sample = torch.randn(1, 1, 50).to(device)
-    signature = mlflow.models.infer_signature(input_sample.detach().numpy(), model(input_sample).detach().numpy())
-    mlflow.pytorch.log_model(model, 'model', signature=signature)
-    print('Model logged to mlflow')
+# def create_signature_log_model(model, device):
+#     input_sample = torch.randn(1, 1, 50).to(device)
+#     signature = mlflow.models.infer_signature(input_sample.detach().numpy(), model(input_sample).detach().numpy())
+#     mlflow.pytorch.log_model(model, 'model', signature=signature)
+#     print('Model logged to mlflow')
+    
+def load_checkpoint_from_artifact(run_id: str, artifact_path: str):
+    mlflow_client = mlflow.tracking.MlflowClient()
+    model_path = mlflow_client.download_artifacts(run_id, artifact_path)
+    model, optimizer, epoch, loss, model_f1_score = load_checkpoint(model_path)
+    return model, optimizer, epoch, loss, model_f1_score
     
