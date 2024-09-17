@@ -2,7 +2,7 @@ import torch
 import dataset as ds
 import torch.nn as nn
 from utils import load_checkpoint, load_checkpoint_from_artifact
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, classification_report
 import argparse 
 import mlflow
 
@@ -11,6 +11,8 @@ def test(test_dataloader, model, criterion, device):
     total_loss = 0
     total_accuracy = 0
     total_f1 = 0
+    total_y = []
+    total_pred = []
     model.eval()
     
     with torch.inference_mode():
@@ -22,11 +24,14 @@ def test(test_dataloader, model, criterion, device):
             accuracy = (output.argmax(1) == y).float().mean()
             total_accuracy += accuracy
             total_f1 += f1_score(y.cpu(), output.argmax(1).cpu(), average='weighted')
+            total_y.extend(y.cpu().numpy())
+            total_pred.extend(output.argmax(1).cpu().numpy())
             
         total_loss /= len(test_dataloader)
         total_accuracy /= len(test_dataloader)
         total_f1 /= len(test_dataloader)
-    return total_loss, total_accuracy, total_f1
+        
+    return total_loss, total_accuracy, total_f1, total_y, total_pred
 
 
 # def get_registered_model(run_id: str, model_name: str='model', tracking_uri='http://localhost:5000'):
@@ -64,6 +69,7 @@ if __name__ == "__main__":
     print(f"Model loaded from epoch {epoch}, with loss: {loss:.4f}, and F1 Score: {model_f1_score:.4f}")
     
     criterion = nn.CrossEntropyLoss()
-    test_loss, test_accuracy, test_f1 = test(test_dataloader, model, criterion, device)
+    test_loss, test_accuracy, test_f1, test_y, test_pred = test(test_dataloader, model, criterion, device)
     print(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}, Test F1 Score: {test_f1:.4f}")
+    print(classification_report(test_y, test_pred, target_names=test_data.classes))
     

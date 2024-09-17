@@ -19,16 +19,16 @@ def create_class_folders(base_dir, classes):
         
 
 
-def feature_extraction(file_name):
+def feature_extraction(file_name, n_mfcc=50):
     sample,sample_rate = librosa.load(file_name,res_type='kaiser_fast')
-    feature = librosa.feature.mfcc(y=sample,sr=sample_rate,n_mfcc=50)
+    feature = librosa.feature.mfcc(y=sample,sr=sample_rate,n_mfcc=n_mfcc)
     scaled_feature = np.mean(feature.T,axis=0)
     return scaled_feature
 
-def save_features(data_dir, df, output_dir):
+def save_features(data_dir, df, output_dir, n_mfcc=50):
     for index, row in tqdm(df.iterrows(), total=df.shape[0]):
         file_name = os.path.join(os.path.abspath(data_dir),'fold'+str(row["fold"])+'/',str(row['slice_file_name'])) 
-        feature = feature_extraction(file_name)
+        feature = feature_extraction(file_name, n_mfcc)
         np.save(os.path.join(output_dir, row['class'], row['slice_file_name'][:-4]), feature)
         
     print('Features saved to', output_dir)
