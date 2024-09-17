@@ -66,10 +66,11 @@ if __name__ == "__main__":
     
     # model, optimizer, epoch, loss, model_f1_score = load_checkpoint(args.checkpoint)
     model,optimizer, epoch, loss, model_f1_score = load_checkpoint_from_artifact(args.run_id, args.artifact_path)
-    print(f"Model loaded from epoch {epoch}, with loss: {loss:.4f}, and F1 Score: {model_f1_score:.4f}")
+    print(f"Model loaded from epoch {epoch+1}, with loss: {loss:.4f}, and F1 Score: {model_f1_score:.4f}")
     
     criterion = nn.CrossEntropyLoss()
     test_loss, test_accuracy, test_f1, test_y, test_pred = test(test_dataloader, model, criterion, device)
     print(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}, Test F1 Score: {test_f1:.4f}")
     print(classification_report(test_y, test_pred, target_names=test_data.classes))
+    
     

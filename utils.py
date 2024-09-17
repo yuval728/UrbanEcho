@@ -8,7 +8,7 @@ import mlflow
 
 
     
-def create_class_folders(base_dir, classes):
+def create_class_folders(base_dir, classes, save_classes=True):
     for class_name in classes:
         path=os.path.join(base_dir, class_name)
         if os.path.exists(path):
@@ -16,6 +16,13 @@ def create_class_folders(base_dir, classes):
             continue
         os.makedirs(path,exist_ok=True)
         print('created', path)
+    
+    if not save_classes:
+        return
+    
+    with open(os.path.join(base_dir, 'classes.txt'), 'w') as f:
+        for class_name in classes:
+            f.write(class_name+'\n')
         
 
 
