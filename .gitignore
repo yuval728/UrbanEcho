@@ -3,7 +3,7 @@ env
 .vscode
 __pycache__
 checkpoints
-Signals
 mlruns
 mlartifacts
 mlflow-dockerfile
+model_dir

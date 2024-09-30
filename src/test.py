@@ -2,7 +2,7 @@ import torch
 import dataset as ds
 import torch.nn as nn
 from utils import load_checkpoint_from_artifact
-from sklearn.metrics import f1_score, classification_report
+from sklearn.metrics import f1_score, classification_report, confusion_matrix
 import argparse 
 import mlflow
 
@@ -69,8 +69,20 @@ if __name__ == "__main__":
     print(f"Model loaded from epoch {epoch+1}, with loss: {loss:.4f}, and F1 Score: {model_f1_score:.4f}")
     
     criterion = nn.CrossEntropyLoss()
-    test_loss, test_accuracy, test_f1, test_y, test_pred = test(test_dataloader, model, criterion, device)
-    print(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}, Test F1 Score: {test_f1:.4f}")
-    print(classification_report(test_y, test_pred, target_names=test_data.classes))
+    
+    with mlflow.start_run(run_id=args.run_id, nested=True, log_system_metrics=True):
+        
+        test_loss, test_accuracy, test_f1, test_y, test_pred = test(test_dataloader, model, criterion, device)
+        print(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}, Test F1 Score: {test_f1:.4f}")
+        print(classification_report(test_y, test_pred, target_names=test_data.classes))
+        cm = confusion_matrix(test_y, test_pred, normalize='true')
+        print(cm)
+        
+        mlflow.log_metric('test_loss', test_loss)
+        mlflow.log_metric('test_accuracy', test_accuracy)
+        mlflow.log_metric('test_f1', test_f1)
+        
+    
+    
     
     

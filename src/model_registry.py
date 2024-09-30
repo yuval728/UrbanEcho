@@ -46,7 +46,7 @@ class UrbanEcho(mlflow.pyfunc.PythonModel):
     
     def postprocess(self, input):
         prediction = torch.nn.functional.softmax(input, dim=1)
-        print(prediction)
+        # print(prediction)
         return {'class': self.classes[prediction.argmax().item()], 'confidence': prediction.max().item(), 'probabilities': prediction.tolist()}
     
     def predict(self, context, model_input):
@@ -80,7 +80,7 @@ def register_model(run_id: str, artifact_path: str, input_shape: tuple, classes:
     
     # Load model and prepare signature
     model = get_model_from_artifact_checkpoint(run_id, artifact_path)
-    signature = create_model_signature(model, input_shape)
+    # signature = create_model_signature(model, input_shape)
     
     # Convert model to TorchScript and save the traced model
     traced_model_path = convert_model_to_jit(model, input_shape, model_name)

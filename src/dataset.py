@@ -1,6 +1,4 @@
 import torch
-# from torch.utils.data import DataLoader
-
 from torchvision.datasets import DatasetFolder
 import numpy as np
 
