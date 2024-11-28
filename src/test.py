@@ -1,7 +1,7 @@
 import torch
-import dataset as ds
+from . import dataset as ds
 import torch.nn as nn
-from utils import load_checkpoint_from_artifact
+from .utils import load_checkpoint_from_artifact
 from sklearn.metrics import f1_score, classification_report, confusion_matrix
 import argparse 
 import mlflow
