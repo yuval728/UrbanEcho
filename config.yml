@@ -1,5 +1,5 @@
 mlflow:
-  tracking_uri: "http://localhost:5000"
+  tracking_uri: "http://127.0.0.1:5000"
   experiment_name: "UrbanSoundClassification"
 
 csv_file: "data/raw/UrbanSound8K.csv"
@@ -23,6 +23,6 @@ num_epochs: 5
 lr: 0.001
 
 checkpoint_save_path: "checkpoints"
-checkpoint: #"checkpoints/best.pth.tar"
+checkpoint: "checkpoints/best.pth.tar"
 
 model_name: "UrbanEchoModel"

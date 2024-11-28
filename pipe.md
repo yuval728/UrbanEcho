@@ -11,6 +11,8 @@
     python -m src.model_registry --run_id 6c6382f62155418ebfcf93d124956ea1 --artifact_path best.pth.tar --experiment_name SoundClassification
 
 ### Serve model
+    $env:MLFLOW_TRACKING_URI='http://localhost:5000' # Set the MLflow tracking URI for windows
+
     mlflow models serve -m models:/model/latest -p 5000 --no-conda 
 
 ### Make predictions
