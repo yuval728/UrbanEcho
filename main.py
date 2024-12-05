@@ -125,6 +125,10 @@ def main():
         test_loss, test_accuracy, test_f1, test_y, test_pred = test(
             test_loader, model, criterion, device
         )
+        
+        mlflow.log_metric('test_loss', test_loss)
+        mlflow.log_metric('test_accuracy', test_accuracy)
+        mlflow.log_metric('test_f1', test_f1)
 
         logging.info(
             f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}, Test F1 Score: {test_f1:.4f}"
@@ -145,7 +149,7 @@ def main():
         mlflow.register_model(
             f"runs:/{run.info.run_id}/{config['model_name']}", config["model_name"]
         )
-
+        
         logging.info("Model registered successfully!")
 
         logging.info("End of training!")
